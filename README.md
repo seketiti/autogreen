@@ -8,6 +8,12 @@ YAML is a human-readable data-serialization language. It is commonly used for co
 name: Auto-Green
 
 on:
+  workflow_dispatch:
+    inputs:
+      log:
+        description: "Commit Log"
+        required: false
+        default: "a commit a day keeps your girlfriend away"
   schedule:
     - cron: "0 0 * * 0-5"
 
@@ -20,15 +26,17 @@ jobs:
 
       - name: Commit
         run: |
-          git config --local user.name "username"
-          git config --local user.email "email@address.com"
-          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git config --local user.name "${{ github.actor }}"
+          git config --local user.email "${{ github.actor }}@example.com"
+          git remote set-url origin https://${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git pull --rebase
-          git commit --allow-empty -m "a commit a day keeps your girlfriend away"
+          git commit --allow-empty -m "${{ github.event.inputs.log }}"
           git push
 ```
-### Cron syntax
-Cron syntax has five fields separated by a space, and each field represents a unit of time.
+### Manual Event
+Use the `workflow_dispatch` event to manually trigger workflow runs. When the workflow runs, access the input values in the `github.event.inputs` context.
+### Scheduled Event
+Use the `schedule` event to trigger a workflow at a scheduled time. Cron syntax has five fields separated by a space, and each field represents a unit of time.
 ```
 ┌───────────── minute (0 - 59)
 │ ┌───────────── hour (0 - 23)
