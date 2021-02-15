@@ -12,7 +12,7 @@ on:
     inputs:
       log:
         description: "Commit Log"
-        required: false
+        required: true
         default: "a commit a day keeps your girlfriend away"
   schedule:
     - cron: "0 0 * * 0-5"
@@ -24,14 +24,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Commit
+      - name: Pull
         run: |
           git config --local user.name "${{ github.actor }}"
-          git config --local user.email "${{ github.actor }}@example.com"
+          git config --local user.email "${{ github.actor }}@gmail.com"
           git remote set-url origin https://${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git pull --rebase
-          git commit --allow-empty -m "${{ github.event.inputs.log }}"
-          git push
+
+      - name: Commit (default)
+        if: github.event.inputs.log == 0
+        run: git commit --allow-empty -m "a commit a day keeps your girlfriend away"
+
+      - name: Commit (input)
+        if: github.event.inputs.log != 0
+        run: git commit --allow-empty -m "${{ github.event.inputs.log }}"
+
+      - name: Push
+        run: git push
 ```
 ### Manual Event
 Use the `workflow_dispatch` event to manually trigger workflow runs. When the workflow runs, access the input values in the `github.event.inputs` context.
